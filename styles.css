@@ -100,19 +100,6 @@ h2.gap{margin-top:34px}
 /* tombol rekap */
 .rekap{
   display:block;margin:34px 0 0 8px;min-width:104px;height:38px;padding:0 14px;
-  border:0;border-radius:14px;background:var(--btn);color:#fff;
-  font:inherit;font-size:10.5px;font-weight:700;cursor:pointer;
-}
-.rekap:disabled{opacity:.6}
-
-
-/* popup */
-.modal{
-  position:fixed;inset:0;z-index:20;background:rgba(40,20,50,.45);
-  display:flex;align-items:flex-end;justify-content:center;
-}
-.sheet{
-  width:100%;max-width:560px;background:var(--bg);
   border:3px solid var(--frame);border-bottom:0;border-radius:18px 18px 0 0;
   padding:18px 20px calc(20px + env(safe-area-inset-bottom,0px));
   max-height:92dvh;overflow-y:auto;
