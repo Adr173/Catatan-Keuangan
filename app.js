@@ -1,6 +1,6 @@
 /* ============ PENGATURAN ============ */
 // Ganti dengan URL Web App Google Apps Script Anda (berakhiran /exec)
-const API_URL = 'GANTI_DENGAN_URL_WEB_APP_ANDA';
+const API_URL = 'https://script.google.com/macros/s/AKfycbybZI36ggk5mquxQA_syc5QhuMIUhf3HRalxxExAMVkOi17E2xeZbrn_vuGtB11Gd-YUQ/exec';
 const PER_PAGE = 8;
 const CACHE_KEY = 'catatan_keuangan_cache_v1';
 const PDF_LIBS = [
