@@ -32,3 +32,86 @@
 
   <section class="cards">
     <div class="card c1"><b>Total Saldo</b><span id="vTotal">Rp 0</span></div>
+    <div class="card c2"><b>Pemasukan</b><span id="vMasuk">Rp 0</span></div>
+    <div class="card c3"><b>Pengeluaran</b><span id="vKeluar">Rp 0</span></div>
+    <div class="card c4"><b>SHOPEE</b><span id="vShopee">Rp 0</span></div>
+  </section>
+
+  <div class="head">
+    <h2>Pemasukkan/Pengeluaran</h2>
+    <button class="rpill" id="rpTrx" type="button">Pilih rentang waktu</button>
+    <button class="pilih" id="pbTrx" type="button">Pilih</button>
+  </div>
+  <table class="tbl pink">
+    <colgroup><col class="cno"><col><col class="crin"><col class="cnom"></colgroup>
+    <thead><tr><th>No</th><th>Transaksi</th><th>Rincian</th><th>Nominal</th></tr></thead>
+    <tbody id="bodyTrx"></tbody>
+  </table>
+  <div class="pager pink" id="pagerTrx"></div>
+
+  <div class="head gap">
+    <h2>Pemasukkan Shopee</h2>
+    <button class="rpill" id="rpShopee" type="button">Pilih rentang waktu</button>
+    <button class="pilih" id="pbShopee" type="button">Pilih</button>
+  </div>
+  <table class="tbl blue">
+    <colgroup><col class="cno"><col><col class="cnom"></colgroup>
+    <thead><tr><th>No</th><th>Pembeli</th><th>Nominal</th></tr></thead>
+    <tbody id="bodyShopee"></tbody>
+  </table>
+  <div class="pager blue" id="pagerShopee"></div>
+
+  <button id="btnRekap" class="rekap" type="button">Download Rekap</button>
+</main>
+
+<!-- Popup tambah / ubah data -->
+<div id="modal" class="modal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="formTitle">
+    <h3 id="formTitle">Tambah data</h3>
+
+    <div id="rowJenis">
+      <label for="fJenis">Jenis</label>
+      <select id="fJenis">
+        <option value="pengeluaran">Pengeluaran</option>
+        <option value="pemasukan">Pemasukkan</option>
+      </select>
+    </div>
+
+    <label for="fTanggal">Tanggal</label>
+    <input id="fTanggal" type="date">
+
+    <label for="fJudul" id="lJudul">Transaksi</label>
+    <input id="fJudul" type="text" maxlength="80">
+
+    <label for="fNominal">Nominal (Rp)</label>
+    <input id="fNominal" type="text" inputmode="numeric" placeholder="0">
+
+    <div class="actions">
+      <button id="btnHapus" class="b-del" type="button" hidden>Hapus</button>
+      <button id="btnBatal" class="b-cancel" type="button">Batal</button>
+      <button id="btnSimpan" class="b-save" type="button">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Popup rentang waktu -->
+<div id="rangeModal" class="modal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="rangeTitle">
+    <h3 id="rangeTitle">Rentang waktu</h3>
+    <label for="rDari">Dari tanggal</label>
+    <input id="rDari" type="date">
+    <label for="rSampai">Sampai tanggal</label>
+    <input id="rSampai" type="date">
+    <div class="actions">
+      <button id="rReset" class="b-del" type="button">Atur ulang</button>
+      <button id="rBatal" class="b-cancel" type="button">Batal</button>
+      <button id="rTerapkan" class="b-save" type="button">Terapkan</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>
