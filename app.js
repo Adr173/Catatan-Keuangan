@@ -1,5 +1,5 @@
 /* ============ PENGATURAN ============ */
-// Ganti dengan URL Web App Google Apps Script Anda (berakhiran /exec)
+// URL Web App Google Apps Script (berakhiran /exec)
 const API_URL = 'https://script.google.com/macros/s/AKfycbybZI36ggk5mquxQA_syc5QhuMIUhf3HRalxxExAMVkOi17E2xeZbrn_vuGtB11Gd-YUQ/exec';
 const PER_PAGE = 8;
 const CACHE_KEY = 'catatan_keuangan_cache_v1';
@@ -29,17 +29,36 @@ function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
+
+const BULAN = { Jan: 1, Feb: 2, Mar: 3, Apr: 4, May: 5, Jun: 6, Jul: 7, Aug: 8, Sep: 9, Oct: 10, Nov: 11, Dec: 12 };
+const pad2 = n => String(n).padStart(2, '0');
+
 function todayStr() {
   const d = new Date();
-  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
 }
-function tglKecil(s) {                            // 2026-10-24 -> 24/10/26
-  if (!s) return '';
+function normTanggal(v) {                         // apa pun -> yyyy-mm-dd
+  if (v == null || v === '') return '';
+  const s = String(v).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const m = s.match(/^[A-Za-z]{3} ([A-Za-z]{3}) (\d{1,2}) (\d{4})/);   // "Fri Oct 23 2026 ..."
+  if (m && BULAN[m[1]]) return m[3] + '-' + pad2(BULAN[m[1]]) + '-' + pad2(m[2]);
+  const d = new Date(s);                                                // ISO "....T16:00:00.000Z" dll.
+  if (!isNaN(d)) return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+  return s;
+}
+function normData(list) {
+  return list.map(r => Object.assign({}, r, { tanggal: normTanggal(r.tanggal) }));
+}
+function tglKecil(s) {                            // -> 24/10/26
+  s = normTanggal(s);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
   const p = s.split('-');
   return p[2] + '/' + p[1] + '/' + p[0].slice(2);
 }
-function tglPdf(s) {                              // 2026-10-24 -> 24/10/2026
-  if (!s) return '';
+function tglPdf(s) {                              // -> 24/10/2026
+  s = normTanggal(s);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
   const p = s.split('-');
   return p[2] + '/' + p[1] + '/' + p[0];
 }
@@ -73,7 +92,10 @@ function sum(list) { return list.reduce((t, r) => t + (Number(r.nominal) || 0), 
 
 function saveCache() { try { localStorage.setItem(CACHE_KEY, JSON.stringify(data)); } catch (e) {} }
 function readCache() {
-  try { const c = JSON.parse(localStorage.getItem(CACHE_KEY) || '[]'); if (Array.isArray(c)) data = c; } catch (e) {}
+  try {
+    const c = JSON.parse(localStorage.getItem(CACHE_KEY) || '[]');
+    if (Array.isArray(c)) data = normData(c);
+  } catch (e) {}
 }
 
 async function api(payload) {
@@ -92,7 +114,7 @@ async function loadData() {
     const r = await fetch(API_URL + '?action=list');
     const j = await r.json();
     if (!j.ok) throw new Error(j.error || 'Gagal');
-    data = j.data;
+    data = normData(j.data);
     saveCache();
     render();
   } catch (e) {
@@ -287,8 +309,12 @@ async function downloadRekap() {
     });
 
     function section(judul, rows, color, total) {
+      const pageH = doc.internal.pageSize.getHeight();
       let y = doc.lastAutoTable.finalY + 22;
-      if (y > 760) { doc.addPage(); y = 50; }
+      const needed = 40 + 20 + rows.length * 19 + 22;       // judul + header + baris + total
+      if (needed < pageH - 100 && y + needed > pageH - 40) { doc.addPage(); y = 50; }
+      else if (y > pageH - 80) { doc.addPage(); y = 50; }
+
       doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
       doc.text(judul, 40, y);
       if (!rows.length) {
@@ -302,11 +328,16 @@ async function downloadRekap() {
         head: [['Tanggal', judul.indexOf('Shopee') > -1 ? 'Pembeli' : 'Transaksi', 'Nominal']],
         body: rows.map(r => [tglPdf(r.tanggal), r.judul, rp(r.nominal)]),
         foot: [['Total', '', rp(total)]],
-        showFoot: 'lastPage', theme: 'grid', styles: { fontSize: 9 },
+        showFoot: 'lastPage', theme: 'grid', styles: { fontSize: 9, overflow: 'linebreak' },
         headStyles: { fillColor: color },
-        footStyles: { fillColor: [245, 235, 240], textColor: 20 },
-        columnStyles: { 2: { halign: 'right' } },
-        margin: { left: 40, right: 40 }
+        footStyles: { fillColor: [245, 235, 240], textColor: 20, fontStyle: 'bold' },
+        columnStyles: {
+          0: { cellWidth: 80 },
+          1: { cellWidth: 'auto' },
+          2: { cellWidth: 100, halign: 'right', overflow: 'visible' }
+        },
+        rowPageBreak: 'avoid',
+        margin: { left: 40, right: 40, bottom: 40 }
       });
     }
     section('Pemasukkan' + periodeText(range.trx), masuk, [143, 155, 199], tM);
